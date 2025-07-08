@@ -1,0 +1,70 @@
+# macOS 特定的檔案
+.DS_Store
+.localized
+.Spotlight-V100
+.Trashes
+._*
+
+# Xcode 相關
+*.xcodeproj/*.xcuserdatad/
+*.xcworkspace/*.xcuserdatad/
+xcuserdata/
+DerivedData/
+build/
+*.hmap
+*.ipa
+*.dSYM.zip
+Pods/
+Carthage/Build/
+.swiftpm/
+
+# Visual Studio Code 相關
+.vscode/
+
+# JetBrains IDEs (IntelliJ IDEA, WebStorm, PyCharm, etc.) 相關
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# 一般日誌檔或暫存檔
+*.log
+*.temp
+*.tmp
+*.bak
+*~.nib
+*.swp
+*.swo
+*.swn
+
+# npm / Node.js 相關
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Python 相關
+__pycache__/
+*.pyc
+.Python
+
+# Ruby 相關
+.bundle/
+vendor/bundle/
+
+# Go 相關
+*.exe
+*.test
+*.prof
+
+# Gradle 相關
+.gradle/
+build/
+
+# Maven 相關
+target/
+
+# Windows 特定的檔案 (以防跨平台開發)
+Thumbs.db
+Desktop.ini
