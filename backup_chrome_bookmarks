@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import os
+import json
+import shutil
+from datetime import datetime, timezone
+
+
+# === 配置路径 ===
+HOME = os.path.expanduser("~")
+CHROME_BOOKMARK_FILE = os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/Bookmarks")
+BACKUP_DIR = os.path.join(HOME, "Library/Mobile Documents/com~apple~CloudDocs/AppData/cfg_Chrome/")
+MAX_BACKUPS = 10
+
+# === 函数：将书签 JSON 转换为 HTML 格式 ===
+def json_to_html(bookmarks_json):
+    def parse_node(node):
+        if node['type'] == 'folder':
+            folder_html = f"<DT><H3>{node['name']}</H3>\n<DL><p>\n"
+            for child in node.get('children', []):
+                folder_html += parse_node(child)
+            folder_html += "</DL><p>\n"
+            return folder_html
+        elif node['type'] == 'url':
+            date_added = int(node.get('date_added', '0')) // 1000000
+            time_str = str(int(datetime.fromtimestamp(date_added, tz=timezone.utc).timestamp()))
+            return f'<DT><A HREF="{node["url"]}" ADD_DATE="{time_str}">{node["name"]}</A>\n'
+        return ''
+
+    html = "<!DOCTYPE NETSCAPE-Bookmark-file-1>\n"
+    html += "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">\n"
+    html += "<TITLE>Bookmarks</TITLE>\n"
+    html += "<H1>Bookmarks</H1>\n"
+    html += "<DL><p>\n"
+    for child in bookmarks_json['roots']['bookmark_bar']['children']:
+        html += parse_node(child)
+    html += "</DL><p>\n"
+    return html
+
+# === 函数：保留最近 N 个备份（同时删除 JSON + HTML）===
+def prune_old_backups():
+    files = sorted([f for f in os.listdir(BACKUP_DIR) if f.startswith("bookmarks_")],
+                   key=lambda name: os.path.getmtime(os.path.join(BACKUP_DIR, name)),
+                   reverse=True)
+    base_names = sorted(set(f.split('.')[0] for f in files))
+    if len(base_names) <= MAX_BACKUPS:
+        return
+    for name in base_names[MAX_BACKUPS:]:
+        for ext in [".json", ".html"]:
+            path = os.path.join(BACKUP_DIR, f"{name}{ext}")
+            if os.path.exists(path):
+                os.remove(path)
+
+# === 主函数 ===
+def main():
+    if not os.path.exists(CHROME_BOOKMARK_FILE):
+        print(f"[!] Chrome bookmark file not found: {CHROME_BOOKMARK_FILE}")
+        return
+
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_name = f"bookmarks_{timestamp}"
+
+    # 1. 备份 JSON
+    json_backup_path = os.path.join(BACKUP_DIR, base_name + ".json")
+    shutil.copy2(CHROME_BOOKMARK_FILE, json_backup_path)
+
+    # 2. 读取并转换为 HTML
+    with open(json_backup_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    html_content = json_to_html(data)
+    html_backup_path = os.path.join(BACKUP_DIR, base_name + ".html")
+    with open(html_backup_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    # 3. 清理旧备份
+    prune_old_backups()
+
+    print(f"[✓] Backup created: {base_name}.json & .html")
+    print(f"[✓] Saved in: {BACKUP_DIR}")
+    print(f"[✓] Old backups pruned (keeping last {MAX_BACKUPS})")
+
+if __name__ == "__main__":
+    main()
