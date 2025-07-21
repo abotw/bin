@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 # === 配置路径 ===
 HOME = os.path.expanduser("~")
 CHROME_BOOKMARK_FILE = os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/Bookmarks")
-BACKUP_DIR = os.path.join(HOME, "Library/Mobile Documents/com~apple~CloudDocs/AppData/db_Chrome/")
+BACKUP_DIR = os.path.join(HOME, "Library/Mobile Documents/com~apple~CloudDocs/AppData/db_Chrome/Bookmarks")
 MAX_BACKUPS = 10
 
 # === 函数：将书签 JSON 转换为 HTML 格式 ===
